@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--引入默认的一些设置-->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Console：写入日志到控制台 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- spring web信息 -->
+    <logger name="org.springframework.web" level="INFO"/>
+
+    <!-- 屏蔽无用的框架日志 -->
+    <logger name="org.springframework.context.support.PostProcessorRegistrationDelegate" level="ERROR"/>
+
+    <!-- 项目日志 -->
+    <logger name="com.ty.jdcs" level="INFO"/>
+
+    <!-- 根日志 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

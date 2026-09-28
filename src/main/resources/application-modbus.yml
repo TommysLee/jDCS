@@ -1,0 +1,35 @@
+modbus:
+  # === 串口参数 ===
+  serial-port: COM8
+  baud-rate: 9600
+  parity: NONE
+  data-bits: 8
+  stop-bits: 1
+
+  # === 超时参数 ===
+  response-timeout-ms: 2000        # 单次请求响应超时
+  operation-timeout-ms: 5000       # 应用层硬超时，必须 > response-timeout-ms
+
+  # === 读取重试（仅针对传输异常） ===
+  read-retry-count: 2
+  read-retry-interval-ms: 200
+
+  # === 连接参数 ===
+  reconnect-interval-ms: 10000     # 重建冷却窗口间隔时间
+  max-reconnect-attempts: 5        # 连续重连失败 N 次后强制退出
+  queue-capacity: 50               # 单线程执行器队列容量
+
+  # === JNI 卡死检测 ===
+  timeout-threshold: 3             # 累计硬超时 N 次后强制退出
+  leaked-thread-threshold: 5       # modbus-io 泄漏线程 N 个后强制退出
+
+  # === 调度参数 ===
+  collection-interval-ms: 1000     # 数据采集轮询时间
+  watchdog-interval-ms: 60000      # 看门狗轮询时间
+
+  # === 看门狗 ===
+  watchdog-idle-threshold-ms: 300000  # 距上次采集超过 5 分钟未启动 → 调度停摆
+  watchdog-queue-stagnant-ms: 60000   # 队列停滞 1 分钟 → JNI 卡死
+
+  # === 合并读取 ===
+  merge-max-gap: 5                    # 相邻测点的寄存器地址间隙在 N 个内的被合并读取

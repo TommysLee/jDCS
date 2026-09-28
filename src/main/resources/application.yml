@@ -1,0 +1,22 @@
+#服务器配置（仅在SpringBoot内有效，外部Tomcat等容器无效）
+server:
+  port: 8080 #服务器HTTP端口
+  servlet:
+    encoding:
+      charset: UTF-8
+
+#Spring配置
+spring:
+  profiles:
+    include: modbus, modbus-points
+  task:
+    scheduling: #定时任务线程池配置
+      pool:
+        size: 2
+      thread-name-prefix: "sched-"
+  thymeleaf: #视图配置
+    cache: false #开发时，关闭thymeleaf缓存
+  jackson: #JSON配置
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: NON_EMPTY

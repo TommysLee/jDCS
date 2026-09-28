@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ty.jdcs</groupId>
+    <artifactId>jdcs</artifactId>
+    <version>1.0.0</version>
+    <description>jDCS 一个面向工业现场的 Modbus RTU 数据采集基础框架</description>
+
+    <!-- ################## -->
+    <!-- 继承SpringBoot父项目 -->
+    <!-- ################## -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.16</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <!-- ####### -->
+    <!-- 属性配置 -->
+    <!-- ####### -->
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <digitalpetri-modbus.version>2.1.6</digitalpetri-modbus.version>
+    </properties>
+
+    <!-- ### -->
+    <!-- 插件 -->
+    <!-- ### -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- ####### -->
+    <!-- 依赖配置 -->
+    <!-- ####### -->
+    <dependencies>
+        <!-- Modbus RTU over Serial 类库 -->
+        <dependency>
+            <groupId>com.digitalpetri.modbus</groupId>
+            <artifactId>modbus-serial</artifactId>
+            <version>${digitalpetri-modbus.version}</version>
+        </dependency>
+
+        <!-- Spring MVC Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Boot 测试框架 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 加入此依赖，消除代码中 注解@ConfigurationProperties 的警告提示 -->
+        <!-- 编译时生成spring-configuration-metadata.json， 此文件主要给IDE使用，仅用于提示使用 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ########## -->
+        <!-- 常用工具类库 -->
+        <!-- ########## -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

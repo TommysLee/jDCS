@@ -1,0 +1,13 @@
+modbus:
+  # 测点清单
+  points:
+    - point-id: temperature_hall
+      point-name: 大厅温度
+      slave-id: 1
+      function-code: 3
+      address: 1
+      data-type: UINT16
+      byte-order: ABCD
+      scale: 0.1
+      offset: 0
+      unit: "℃"
