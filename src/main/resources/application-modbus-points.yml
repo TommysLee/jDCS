@@ -11,3 +11,10 @@ modbus:
       scale: 0.1
       offset: 0
       unit: "℃"
+    - point-id: sn
+      point-name: 序列号
+      slave-id: 1
+      function-code: 3
+      address: 2
+      data-type: STRING
+      register-count: 4

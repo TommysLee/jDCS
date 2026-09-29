@@ -24,7 +24,7 @@ modbus:
   leaked-thread-threshold: 5       # modbus-io 泄漏线程 N 个后强制退出
 
   # === 调度参数 ===
-  collection-interval-ms: 1000     # 数据采集轮询时间
+  collection-interval-ms: 2000     # 数据采集轮询时间
   watchdog-interval-ms: 60000      # 看门狗轮询时间
 
   # === 看门狗 ===
