@@ -47,14 +47,14 @@ public class TestModbusRead {
     @Test
     public void testCoils() {
         int fc = FunctionCode.READ_COILS.getCode();
-        ModbusPoint p = point(1, 3, fc, ModbusDataType.BOOL, "线圈值");
+        ModbusPoint p = point(1, 6, fc, ModbusDataType.BOOL, "线圈值");
         exec(p);
     }
 
     @Test
     public void testDiscreteInputs() {
         int fc = FunctionCode.READ_DISCRETE_INPUTS.getCode();
-        ModbusPoint p = point(1, 4, fc, ModbusDataType.UINT16, "离散输入");
+        ModbusPoint p = point(1, 7, fc, ModbusDataType.UINT16, "离散输入");
         exec(p);
     }
 }
