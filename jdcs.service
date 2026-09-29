@@ -1,0 +1,28 @@
+[Unit]
+Description=JDCS - Java Data Collector Service
+After=network.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=jdcs
+Group=dialout
+WorkingDirectory=/opt/jdcs
+
+ExecStart=/usr/bin/java \
+  -Xms256m -Xmx512m \
+  -XX:+HeapDumpOnOutOfMemoryError \
+  -XX:HeapDumpPath=/opt/jdcs/dumps \
+  -XX:+ExitOnOutOfMemoryError \
+  -Duser.timezone=Asia/Shanghai \
+  -jar /opt/jdcs/jdcs.jar
+
+Restart=always
+RestartSec=10
+
+StandardOutput=append:/var/log/jdcs/stdout.log
+StandardError=append:/var/log/jdcs/stderr.log
+
+[Install]
+WantedBy=multi-user.target
