@@ -22,8 +22,8 @@ public class ModbusHealthChecker {
     private final ModbusRtuMaster master;
     private final ModbusSerialProperties props;
 
-    /** 上次采集开始时间（毫秒）。0 = 尚未开始过（启动期宽限）。 */
-    private final AtomicLong lastCollectStartTime = new AtomicLong(0);
+    /** 上次采集开始时间（毫秒）。-1 表示从未完成过。 */
+    private final AtomicLong lastCollectStartTime = new AtomicLong(-1L);
 
     public ModbusHealthChecker(ModbusRtuMaster master, ModbusSerialProperties props) {
         this.master = master;
@@ -56,6 +56,8 @@ public class ModbusHealthChecker {
      * @return ModbusHealthStatus
      */
     public ModbusHealthStatus getStatus() {
+        long now = System.currentTimeMillis();
+        long last = lastCollectStartTime.get();
         return ModbusHealthStatus.builder()
                 .connected(isHealthy())
                 .serialPort(props.getSerialPort())
@@ -65,8 +67,8 @@ public class ModbusHealthChecker {
                 .stopBits(props.getStopBits())
                 .ioQueueSize(master.getIoQueueSize())
                 .pointCount(props.getPoints() == null ? 0 : props.getPoints().size())
-                .lastCollectTime(lastCollectStartTime.get())
-                .serverTime(System.currentTimeMillis())
+                .lastCollectAgoMs(last <= 0 ? -1 : Math.max(0L, now - last))
+                .serverTime(now)
                 .build();
     }
 }

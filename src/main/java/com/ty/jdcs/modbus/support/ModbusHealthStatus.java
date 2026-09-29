@@ -34,8 +34,8 @@ public class ModbusHealthStatus {
     /** 测点总数 */
     private int pointCount;
 
-    /** 最近一次采集时间戳（毫秒，0 = 尚未开始过） */
-    private long lastCollectTime;
+    /** 距上次采集的毫秒数（从未成功则为 -1） */
+    private long lastCollectAgoMs;
 
     /** 服务当前时间戳（毫秒） */
     private long serverTime;

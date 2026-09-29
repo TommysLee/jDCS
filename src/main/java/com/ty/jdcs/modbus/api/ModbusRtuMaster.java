@@ -491,7 +491,7 @@ public class ModbusRtuMaster implements AutoCloseable {
             cfg.setRequestTimeout(Duration.ofMillis(props.getResponseTimeoutMs()));
         });
         client.connect();
-        log.info("Modbus RTU 已连接: {}@{} {} {} {}", props.getSerialPort(), props.getBaudRate(), props.getParity(), props.getDataBits(), props.getStopBits());
+        log.info("Modbus RTU 已连接: {} | {} {} {} {}", props.getSerialPort(), props.getBaudRate(), props.getParity(), props.getDataBits(), props.getStopBits());
         return client;
     }
 

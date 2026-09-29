@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modbus RTU 状态</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 20px;
+      padding: 36px 32px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #22c55e, #14b8a6);
+      transition: background 0.3s;
+    }
+    .card.disconnected::before {
+      background: linear-gradient(90deg, #ef4444, #f59e0b);
+    }
+    .card.loading::before {
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    }
+    .card.error::before {
+      background: linear-gradient(90deg, #ef4444, #7f1d1d);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .badge .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .badge.online { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .badge.online .dot { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+    .badge.offline { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .badge.offline .dot { background: #f87171; box-shadow: 0 0 10px #f87171; animation: none; }
+    .badge.loading { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .badge.loading .dot { background: #60a5fa; }
+    .badge.error-state { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.4); }
+    }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .stat {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-value.warn { color: #fbbf24; }
+    .stat-value.bad { color: #f87171; }
+    .detail {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      color: #cbd5e1;
+    }
+    .detail-row span:first-child { color: #94a3b8; }
+    .detail-row span:last-child { font-family: "SF Mono", Menlo, Consolas, monospace; color: #e2e8f0; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(148,163,184,0.1);
+    }
+    .footer a { color: #60a5fa; text-decoration: none; }
+    .refresh-indicator {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .spinner {
+      width: 12px; height: 12px;
+      border: 2px solid rgba(96,165,250,0.2);
+      border-top-color: #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    .refreshing .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #fca5a5;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+    @media (max-width: 480px) {
+      .card { padding: 24px 20px; border-radius: 16px; }
+      .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat-value { font-size: 18px; }
+      .title { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="card" class="card loading">
+    <div class="header">
+      <div class="title">Modbus RTU 运行状态</div>
+      <div id="badge" class="badge loading"><span class="dot"></span><span id="status-text">加载中…</span></div>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">串口连接</div>
+        <div id="v-connected" class="stat-value">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">测点数量</div>
+        <div id="v-points" class="stat-value">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">I/O 队列积压</div>
+        <div id="v-queue" class="stat-value">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">最近采集</div>
+        <div id="v-last" class="stat-value">—</div>
+      </div>
+    </div>
+
+    <div class="detail">
+      <div class="detail-row"><span>端口</span><span id="d-port">—</span></div>
+      <div class="detail-row"><span>波特率</span><span id="d-baud">—</span></div>
+      <div class="detail-row"><span>校验位</span><span id="d-parity">—</span></div>
+      <div class="detail-row"><span>数据位</span><span id="d-data-bits">—</span></div>
+      <div class="detail-row"><span>停止位</span><span id="d-stop-bits">—</span></div>
+      <div class="detail-row"><span>服务器时间</span><span id="d-time">—</span></div>
+    </div>
+
+    <div class="footer">
+      <div>每 3 秒自动刷新 · <a href="/health" target="_blank">/health</a></div>
+      <div id="refresh" class="refresh-indicator refreshing">
+        <div class="spinner"></div>
+        <span id="last-refresh">连接中…</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const $ = id => document.getElementById(id);
+      const REFRESH_MS = 3000;
+      const STALE_MS = 30000;
+      let timer = null;
+
+      function formatAgo(ms) {
+        if (ms < 0) return "从未";
+        if (ms < 1000) return "刚刚";
+        if (ms < 60000) return Math.floor(ms/1000) + " 秒前";
+        if (ms < 3600000) return Math.floor(ms/60000) + " 分前";
+        return Math.floor(ms/3600000) + " 小时前";
+      }
+      function fmtTime(ts) {
+        const d = new Date(ts);
+        const p = n => String(n).padStart(2,'0');
+        return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+      }
+
+      function setClass(cls) {
+        const card = $('card');
+        card.classList.remove('loading','disconnected','error');
+        if (cls) card.classList.add(cls);
+      }
+      function setBadge(type, text) {
+        const b = $('badge');
+        b.className = 'badge ' + type;
+        $('status-text').textContent = text;
+      }
+      function showError(msg) {
+        $('error-msg').classList.add('show');
+        $('error-msg').textContent = msg;
+      }
+      function hideError() {
+        $('error-msg').classList.remove('show');
+      }
+
+      async function refresh() {
+        $('refresh').classList.add('refreshing');
+        try {
+          const r = await fetch('/health', { cache: 'no-store' });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          const d = await r.json();
+          hideError();
+
+          $('v-connected').textContent = d.connected ? '已连接' : '已断开';
+          $('v-connected').className = 'stat-value' + (d.connected ? '' : ' bad');
+          $('v-points').textContent = d.pointCount + ' 点';
+          $('v-queue').textContent = d.ioQueueSize;
+          $('v-queue').className = 'stat-value' + (d.ioQueueSize > 20 ? ' warn' : d.ioQueueSize > 50 ? ' bad' : '');
+          const ago = d.lastCollectAgoMs;
+          $('v-last').textContent = formatAgo(ago);
+          const stale = !d.connected || ago < 0 || ago > STALE_MS;
+          $('v-last').className = 'stat-value' + (!d.connected || ago < 0 ? ' bad' : ago > STALE_MS ? ' warn' : '');
+
+          $('d-port').textContent = d.serialPort || '—';
+          $('d-baud').textContent = d.baudRate ? (d.baudRate + ' bps') : '—';
+          $('d-parity').textContent = d.parity || '—';
+          $('d-data-bits').textContent = d.dataBits || '—';
+          $('d-stop-bits').textContent = d.stopBits || '—';
+          $('d-time').textContent = fmtTime(d.serverTime);
+
+          if (d.connected && !stale) {
+            setClass(null);
+            setBadge('online', '正常运行');
+          } else if (d.connected) {
+            setClass('disconnected');
+            setBadge('offline', '采集停滞');
+          } else {
+            setClass('disconnected');
+            setBadge('offline', '串口未连接');
+          }
+          $('last-refresh').textContent = '更新于 ' + fmtTime(Date.now());
+        } catch(e) {
+          setClass('error');
+          setBadge('error-state', '接口异常');
+          showError('无法连接到 /health 接口：' + e.message);
+          $('v-connected').textContent = '—';
+          $('v-points').textContent = '—';
+          $('v-queue').textContent = '—';
+          $('v-last').textContent = '—';
+          $('d-port').textContent = '—';
+          $('d-baud').textContent = '—';
+          $('d-parity').textContent = '—';
+          $('d-data-bits').textContent = '—';
+          $('d-stop-bits').textContent = '—';
+          $('d-time').textContent = fmtTime(Date.now());
+          $('last-refresh').textContent = '更新失败';
+        } finally {
+          $('refresh').classList.remove('refreshing');
+        }
+      }
+
+      refresh();
+      timer = setInterval(refresh, REFRESH_MS);
+    })();
+  </script>
+</body>
+</html>
