@@ -189,7 +189,7 @@ public class ModbusRtuMaster implements AutoCloseable {
      * @throws ModbusReadException 读取失败时抛出
      */
     public byte[] read(int slaveId, int address, int count, int functionCode) throws ModbusReadException {
-        log.info("slaveId={} address={} count={} functionCode={}", slaveId, address, count, functionCode);
+        log.debug("slaveId={} address={} count={} functionCode={}", slaveId, address, count, functionCode);
 
         ModbusReadException lastError = null;
         int maxAttempts = props.getReadRetryCount() + 1;
@@ -484,7 +484,7 @@ public class ModbusRtuMaster implements AutoCloseable {
             cfg.setSerialPort(props.getSerialPort())
                     .setBaudRate(props.getBaudRate())
                     .setDataBits(props.getDataBits())
-                    .setStopBits(props.getStopBits())
+                    .setStopBits(props.stopBitsCode())
                     .setParity(props.parityCode());
         });
         ModbusRtuClient client = ModbusRtuClient.create(transport, cfg -> {
@@ -542,7 +542,7 @@ public class ModbusRtuMaster implements AutoCloseable {
             } catch (Exception e) {
                 log.warn("Modbus 关闭会话超时或异常，放弃等待: {}", e.toString());
             } finally {
-                closer.shutdown();
+                closer.shutdownNow();
             }
         }
         log.info("ModbusRtuMaster 已关闭");

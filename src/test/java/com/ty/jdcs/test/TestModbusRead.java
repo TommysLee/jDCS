@@ -47,14 +47,16 @@ public class TestModbusRead {
     @Test
     public void testCoils() {
         int fc = FunctionCode.READ_COILS.getCode();
-        ModbusPoint p = point(1, 6, fc, ModbusDataType.BOOL, "线圈值");
+        String dataType = ModbusDataType.BOOL;
+        ModbusPoint p = point(1, 6, fc, dataType, "线圈值");
         exec(p);
     }
 
     @Test
     public void testDiscreteInputs() {
         int fc = FunctionCode.READ_DISCRETE_INPUTS.getCode();
-        ModbusPoint p = point(1, 7, fc, ModbusDataType.UINT16, "离散输入");
+        String dataType = ModbusDataType.UINT16; // 仅测试：线圈正常应配 BOOL，此处 UINT16 在 BADC/DCBA 下会得到 256
+        ModbusPoint p = point(1, 7, fc, dataType, "离散输入");
         exec(p);
     }
 }

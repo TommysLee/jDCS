@@ -23,7 +23,7 @@ public class ModbusHealthStatus {
     private String parity;
 
     /** 数据位 */
-    private int dataBits = 8;
+    private int dataBits;
 
     /** 停止位 */
     private int stopBits;
