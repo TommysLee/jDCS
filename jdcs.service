@@ -1,8 +1,12 @@
 [Unit]
 Description=JDCS - Java Data Collector Service
 After=network.target
-StartLimitIntervalSec=300
-StartLimitBurst=5
+
+# 无限重启：禁用 systemd 启动速率限制。
+# systemd 默认限制为「10 秒内最多启动 5 次」，超限后放弃重启并把服务标记为 failed；
+# StartLimitIntervalSec=0 表示完全不限速，服务崩溃后由 systemd 无限次自动拉起，适配长期无人值守。
+# 主动停止：systemctl stop jdcs —— 手动停止后不会被自动拉起，需 systemctl start 方可恢复。
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
@@ -18,6 +22,8 @@ ExecStart=/usr/bin/java \
   -Duser.timezone=Asia/Shanghai \
   -jar /opt/jdcs/jdcs.jar
 
+# Restart=always：进程以任何原因退出（崩溃 / Runtime.halt / OOM）均重新拉起。
+# RestartSec=10：两次重启之间的等待时间，用于避免崩溃时高频空转；它不是重启次数上限。
 Restart=always
 RestartSec=10
 

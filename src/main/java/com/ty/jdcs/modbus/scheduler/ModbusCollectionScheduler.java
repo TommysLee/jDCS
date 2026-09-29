@@ -136,12 +136,11 @@ public class ModbusCollectionScheduler {
     private void dispatch(ModbusPoint p, byte[] bytes) {
         try {
             boolean flag = ModbusPointParser.tryFill(p, bytes);
-            if (flag) {
-                dataHandler.handle(p);
-            } else {
+            if (!flag) {
                 log.warn("try fill error: slaveId={} pointId={} pointName={} reason: {}",
                         p.getSlaveId(), p.getPointId(), p.getPointName(), p.getErrorMsg());
             }
+            dataHandler.handle(p);
         } catch (Throwable handlerEx) {
             log.error("[{}] ModbusDataHandler 处理异常（不影响采集链路）: {}",
                     p.getPointName(), handlerEx.getMessage(), handlerEx);
