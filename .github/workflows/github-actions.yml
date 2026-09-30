@@ -1,0 +1,47 @@
+# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
+# https://github.com/graalvm/setup-graalvm
+# https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+
+name: Spring Boot Maven Package
+
+on:
+  release:
+    types: [published] # 当 Release 从草稿变为正式发布，或直接创建正式发布时触发
+  workflow_dispatch:     # 允许在 Actions 页面手动触发（用于调试）
+
+jobs:
+  # ---------- Jar 构建 ----------
+  build-and-upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 允许创建 Release 和上传附件（后续可上传更新包）
+
+    steps:
+      # 1. 检出代码（此时会自动切换到 Release 对应的 tag 提交）
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # 2. 设置 JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: maven   # 自动缓存 Maven 依赖
+
+      # 3. Maven 构建打包（如需运行测试请删除 -DskipTests）
+      - name: Build Production Jar
+        run: mvn clean package -DskipTests
+
+      # 4. 将 JAR 与部署文件一并上传到 Release
+      - name: Upload asset to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            target/jdcs-*.jar
+            install.sh
+            jdcs.service
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
