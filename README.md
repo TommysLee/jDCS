@@ -17,6 +17,10 @@
 
 ---
 
+English | [简体中文](./README_cn.md)
+
+---
+
 ## Why this project exists
 
 Modbus data collection looks simple. In practice, it's full of traps:
